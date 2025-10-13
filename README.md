@@ -64,7 +64,7 @@ Wallet  → ZK Proof Generation → Substrate Node → Verification → On-chain
 - **Nullifier Tracking**: Global set preventing double-spends
 - **Commitment Tree**: Merkle tree for membership proofs
 
-## 🚀 Usage
+##  Usage
 
 
 Your  wallet should:
