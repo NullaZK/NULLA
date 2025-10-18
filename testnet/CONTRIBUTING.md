@@ -17,7 +17,7 @@ Your activity helps us test scalability, usability, and privacy guarantees under
 
 ### 2️⃣ Run a Node and Help Build the Network
 
-- **Download the official NULLA node binary** (see [Releases](#) or [Docs](docs/USER-GUIDE.md) for setup instructions).
+- **Download the official NULLA node binary** (see [Releases](#) or [Docs](docs/USERGUIDE.md) for setup instructions).
 - **Join the testnet** to help grow and secure the decentralized network.
 - **Optional:** Share feedback about node installation, synchronization, and resource usage.
 
