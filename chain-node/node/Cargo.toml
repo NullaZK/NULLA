@@ -1,6 +1,6 @@
 [package]
-name = "NULLA"
-description = "A solochain node template built with Substrate, part of Polkadot Sdk."
+name = "nulla-node"
+description = "NULLA node built with Substrate, part of Polkadot Sdk."
 version = "0.1.0"
 license = "Unlicense"
 authors.workspace = true
@@ -24,8 +24,6 @@ frame-system.default-features = true
 frame-system.workspace = true
 futures = { features = ["thread-pool"], workspace = true }
 jsonrpsee = { features = ["server"], workspace = true }
-pallet-balances.default-features = true
-pallet-balances.workspace = true
 pallet-transaction-payment-rpc.default-features = true
 pallet-transaction-payment-rpc.workspace = true
 pallet-transaction-payment.default-features = true
