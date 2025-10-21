@@ -4,8 +4,7 @@
 
 use crate::service::FullClient;
 
-use runtime::{AccountId, Balance, SystemCall, RuntimeCall};
-use runtime::Balances as BalancesPallet;
+use runtime::{AccountId, Balance, BalancesCall, SystemCall};
 use sc_cli::Result;
 use sc_client_api::BlockBackend;
 use nulla_runtime as runtime;
@@ -83,10 +82,8 @@ impl frame_benchmarking_cli::ExtrinsicBuilder for TransferKeepAliveBuilder {
 		let extrinsic: OpaqueExtrinsic = create_benchmark_extrinsic(
 			self.client.as_ref(),
 			acc,
-			RuntimeCall::Balances(pallet_balances::Call::transfer_keep_alive { 
-				dest: self.dest.clone().into(), 
-				value: self.value 
-			}),
+			BalancesCall::transfer_keep_alive { dest: self.dest.clone().into(), value: self.value }
+				.into(),
 			nonce,
 		)
 		.into();
