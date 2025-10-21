@@ -8,22 +8,18 @@ edition = "2021"
 [workspace]
 members = [
     "node",
-    "pallets/crypto-primitives",
-    "pallets/private-balances",
-    "pallets/stealth-addresses",
-    "pallets/privacy-staking",
-    "pallets/nullifier-set",
+    "pallets/template",
     "runtime",
+    "verifier",
+    "pallets/pallet-proofs",
+    "wallet",
+    "faucet",
 ]
 resolver = "2"
 
 [workspace.dependencies]
 nulla-runtime = { path = "./runtime", default-features = false }
-pallet-crypto-primitives = { path = "./pallets/crypto-primitives", default-features = false }
-pallet-private-balances = { path = "./pallets/private-balances", default-features = false }
-pallet-stealth-addresses = { path = "./pallets/stealth-addresses", default-features = false }
-pallet-privacy-staking = { path = "./pallets/privacy-staking", default-features = false }
-pallet-nullifier-set = { path = "./pallets/nullifier-set", default-features = false }
+pallet-template = { path = "./pallets/template", default-features = false }
 clap = { version = "4.5.13" }
 frame-benchmarking-cli = { version = "47.0.0", default-features = false }
 frame-metadata-hash-extension = { version = "0.8.0", default-features = false }
@@ -55,7 +51,6 @@ sp-inherents = { version = "36.0.0", default-features = false }
 sp-io = { version = "40.0.1", default-features = false }
 sp-keyring = { version = "41.0.0", default-features = false }
 sp-runtime = { version = "41.1.0", default-features = false }
-sp-std = { version = "14.0.0", default-features = false }
 sp-timestamp = { version = "36.0.0", default-features = false }
 substrate-frame-rpc-system = { version = "43.0.0", default-features = false }
 substrate-build-script-utils = { version = "11.0.0", default-features = false }
@@ -72,14 +67,6 @@ pallet-grandpa = { version = "40.0.0", default-features = false }
 pallet-sudo = { version = "40.0.0", default-features = false }
 pallet-timestamp = { version = "39.0.0", default-features = false }
 pallet-transaction-payment-rpc-runtime-api = { version = "40.0.0", default-features = false }
-pallet-staking = { version = "40.0.0", default-features = false }
-pallet-session = { version = "40.0.0", default-features = false }
-pallet-im-online = { version = "39.0.0", default-features = false }
-pallet-offences = { version = "39.0.0", default-features = false }
-pallet-treasury = { version = "39.0.0", default-features = false }
-pallet-election-provider-multi-phase = { version = "39.0.0", default-features = false }
-pallet-bags-list = { version = "39.0.0", default-features = false }
-sp-staking = { version = "36.0.0", default-features = false }
 scale-info = { version = "2.11.6", default-features = false }
 serde_json = { version = "1.0.132", default-features = false }
 sp-consensus-grandpa = { version = "23.1.0", default-features = false }
@@ -98,3 +85,4 @@ panic = "unwind"
 codegen-units = 1
 inherits = "release"
 lto = true
+
