@@ -27,19 +27,12 @@ use sp_keyring::Sr25519Keyring;
 // Returns the genesis config presets populated with given parameters.
 fn testnet_genesis(
 	initial_authorities: Vec<(AuraId, GrandpaId)>,
+	endowed_accounts: Vec<AccountId>,
 	_root: AccountId,
-	endowed_accounts: Option<Vec<AccountId>>,
-	enable_println: bool,
-) -> serde_json::Value {
+) -> Value {
 	build_struct_json_patch!(RuntimeGenesisConfig {
 		balances: BalancesConfig {
 			balances: endowed_accounts
-				.unwrap_or_else(|| vec![
-					Sr25519Keyring::Alice.to_account_id(),
-					Sr25519Keyring::Bob.to_account_id(),
-					Sr25519Keyring::AliceStash.to_account_id(),
-					Sr25519Keyring::BobStash.to_account_id(),
-				])
 				.iter()
 				.cloned()
 				.map(|k| (k, 1u128 << 60))
@@ -61,14 +54,13 @@ pub fn development_config_genesis() -> Value {
 			sp_keyring::Sr25519Keyring::Alice.public().into(),
 			sp_keyring::Ed25519Keyring::Alice.public().into(),
 		)],
-		sp_keyring::Sr25519Keyring::Alice.to_account_id(),
-		Some(vec![
+		vec![
 			Sr25519Keyring::Alice.to_account_id(),
 			Sr25519Keyring::Bob.to_account_id(),
 			Sr25519Keyring::AliceStash.to_account_id(),
 			Sr25519Keyring::BobStash.to_account_id(),
-		]),
-		true,
+		],
+		sp_keyring::Sr25519Keyring::Alice.to_account_id(),
 	)
 }
 
@@ -85,12 +77,11 @@ pub fn local_config_genesis() -> Value {
 				sp_keyring::Ed25519Keyring::Bob.public().into(),
 			),
 		],
-		Sr25519Keyring::Alice.to_account_id(),
-		Some(Sr25519Keyring::iter()
+		Sr25519Keyring::iter()
 			.filter(|v| v != &Sr25519Keyring::One && v != &Sr25519Keyring::Two)
 			.map(|v| v.to_account_id())
-			.collect::<Vec<_>>()),
-		true,
+			.collect::<Vec<_>>(),
+		Sr25519Keyring::Alice.to_account_id(),
 	)
 }
 
