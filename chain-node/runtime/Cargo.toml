@@ -1,8 +1,8 @@
 [package]
 name = "nulla-runtime"
-description = "NULLA - Privacy-focused blockchain runtime for anonymous transactions"
+description = "NULLA runtime built with Substrate, part of Polkadot Sdk."
 version = "0.1.0"
-license = "MIT"
+license = "Unlicense"
 authors.workspace = true
 homepage.workspace = true
 repository.workspace = true
@@ -25,7 +25,11 @@ frame-try-runtime = { optional = true, workspace = true }
 pallet-aura.workspace = true
 pallet-balances.workspace = true
 pallet-grandpa.workspace = true
+pallet-sudo.workspace = true
+pallet-template.workspace = true
 pallet-timestamp.workspace = true
+pallet-proofs = { path = "../pallets/pallet-proofs", default-features = false }
+verifier = { path = "../verifier", default-features = false }
 pallet-transaction-payment-rpc-runtime-api.workspace = true
 pallet-transaction-payment.workspace = true
 scale-info = { features = ["derive", "serde"], workspace = true }
@@ -45,17 +49,6 @@ sp-storage.workspace = true
 sp-transaction-pool.workspace = true
 sp-version = { features = ["serde"], workspace = true }
 
-# Cryptographic dependencies for privacy features
-curve25519-dalek = { version = "4.0", default-features = false, features = ["alloc"] }
-sha3 = { version = "0.10", default-features = false }
-
-# Privacy pallets
-pallet-private-balances = { path = "../pallets/private-balances", default-features = false }
-pallet-stealth-addresses = { path = "../pallets/stealth-addresses", default-features = false }
-
-pallet-nullifier-set = { path = "../pallets/nullifier-set", default-features = false }
-pallet-privacy-staking = { path = "../pallets/privacy-staking", default-features = false }
-
 [build-dependencies]
 substrate-wasm-builder = { optional = true, workspace = true, default-features = true }
 
@@ -74,7 +67,11 @@ std = [
 	"pallet-aura/std",
 	"pallet-balances/std",
 	"pallet-grandpa/std",
+	"pallet-sudo/std",
+	"pallet-template/std",
 	"pallet-timestamp/std",
+	"pallet-proofs/std",
+	"verifier/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
 	"scale-info/std",
@@ -94,14 +91,6 @@ std = [
 	"sp-transaction-pool/std",
 	"sp-version/std",
 	"substrate-wasm-builder",
-	# Privacy dependencies
-	"sha3/std",
-	# Custom pallets
-	"pallet-private-balances/std",
-	"pallet-stealth-addresses/std",
-
-	"pallet-nullifier-set/std",
-	"pallet-privacy-staking/std",
 ]
 
 runtime-benchmarks = [
@@ -111,15 +100,11 @@ runtime-benchmarks = [
 	"frame-system/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
 	"pallet-grandpa/runtime-benchmarks",
+	"pallet-sudo/runtime-benchmarks",
+	"pallet-template/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"pallet-transaction-payment/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
-	# Privacy pallets benchmarks
-	"pallet-private-balances/runtime-benchmarks",
-	"pallet-stealth-addresses/runtime-benchmarks",
-	"pallet-privacy-staking/runtime-benchmarks",
-
-	"pallet-nullifier-set/runtime-benchmarks",
 ]
 
 try-runtime = [
@@ -130,15 +115,11 @@ try-runtime = [
 	"pallet-aura/try-runtime",
 	"pallet-balances/try-runtime",
 	"pallet-grandpa/try-runtime",
+	"pallet-sudo/try-runtime",
+	"pallet-template/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"sp-runtime/try-runtime",
-	# Privacy pallets try-runtime
-	"pallet-private-balances/try-runtime",
-	"pallet-stealth-addresses/try-runtime",
-	"pallet-privacy-staking/try-runtime",
-
-	"pallet-nullifier-set/try-runtime",
 ]
 
 # Enable the metadata hash generation.
