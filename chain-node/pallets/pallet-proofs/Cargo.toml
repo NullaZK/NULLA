@@ -1,0 +1,32 @@
+[package]
+name = "pallet-proofs"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["rlib"]
+
+[dependencies]
+frame-support = { version = "40.1.0", default-features = false }
+frame-system = { version = "40.1.0", default-features = false }
+sp-runtime = { version = "41.1.0", default-features = false }
+parity-scale-codec = { package = "parity-scale-codec", version = "3.7.4", default-features = false, features = ["derive"] }
+scale-info = { version = "2.11.6", default-features = false, features = ["derive"] }
+verifier = { path = "../../verifier", default-features = false }
+
+[features]
+default = ["std"]
+std = [
+    "frame-support/std",
+    "frame-system/std",
+    "sp-runtime/std",
+    "parity-scale-codec/std",
+    "scale-info/std",
+    "verifier/std",
+]
+
+[dev-dependencies]
+sp-core = { version = "36.1.0", default-features = false }
+sp-io = { version = "40.0.1", default-features = false }
+sha2 = { version = "0.10", default-features = false }
