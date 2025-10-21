@@ -20,13 +20,8 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 pub use frame_system::Call as SystemCall;
+pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
-// Privacy pallet re-exports
-pub use pallet_private_balances::Call as PrivateBalancesCall;
-pub use pallet_stealth_addresses::Call as StealthAddressesCall;
-
-pub use pallet_nullifier_set::Call as NullifierSetCall;
-
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 
@@ -66,8 +61,8 @@ impl_opaque_keys! {
 // https://docs.substrate.io/main-docs/build/upgrade#runtime-versioning
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: alloc::borrow::Cow::Borrowed("NULLA"),
-	impl_name: alloc::borrow::Cow::Borrowed("NULLA"),
+	spec_name: alloc::borrow::Cow::Borrowed("nulla-runtime"),
+	impl_name: alloc::borrow::Cow::Borrowed("nulla-runtime"),
 	authoring_version: 1,
 	// The version of the runtime specification. A full node will not attempt to use its native
 	//   runtime in substitute for the on-chain Wasm runtime unless all of `spec_name`,
@@ -104,12 +99,12 @@ pub const DAYS: BlockNumber = HOURS * 24;
 pub const BLOCK_HASH_COUNT: BlockNumber = 2400;
 
 // Unit = the base number of indivisible units for balances
-pub const UNIT: Balance = 1_000_000_000_000;
-pub const MILLI_UNIT: Balance = 1_000_000_000;
-pub const MICRO_UNIT: Balance = 1_000_000;
+pub const NULLA: Balance = 1_000_000_000_000;
+pub const MILLI_NULLA: Balance = 1_000_000_000;
+pub const MICRO_NULLA: Balance = 1_000_000;
 
 /// Existential deposit.
-pub const EXISTENTIAL_DEPOSIT: Balance = MILLI_UNIT;
+pub const EXISTENTIAL_DEPOSIT: Balance = MILLI_NULLA;
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -219,24 +214,12 @@ mod runtime {
 	pub type Grandpa = pallet_grandpa;
 
 	#[runtime::pallet_index(4)]
-	pub type TransactionPayment = pallet_transaction_payment;
-
-	#[runtime::pallet_index(5)]
 	pub type Balances = pallet_balances;
 
-	// Privacy pallets for anonymous transactions
-	#[runtime::pallet_index(10)]
-	pub type PrivateBalances = pallet_private_balances;
+	#[runtime::pallet_index(5)]
+	pub type TransactionPayment = pallet_transaction_payment;
 
-	#[runtime::pallet_index(11)]
-	pub type StealthAddresses = pallet_stealth_addresses;
-
-	#[runtime::pallet_index(12)]
-
-
-	#[runtime::pallet_index(13)]
-	pub type NullifierSet = pallet_nullifier_set;
-
-	#[runtime::pallet_index(14)]
-	pub type PrivacyStaking = pallet_privacy_staking;
+	// Privacy layer - the core of Nulla Network
+	#[runtime::pallet_index(6)]
+	pub type Proofs = pallet_proofs;
 }
