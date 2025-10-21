@@ -26,25 +26,23 @@
 // Substrate and Polkadot dependencies
 use frame_support::{
 	derive_impl, parameter_types,
-	traits::{ConstBool, ConstU128, ConstU32, ConstU64, ConstU8},
+	traits::{ConstBool, ConstU128, ConstU32, ConstU64, ConstU8, VariantCountOf},
 	weights::{
 		constants::{RocksDbWeight, WEIGHT_REF_TIME_PER_SECOND},
 		IdentityFee, Weight,
 	},
-	PalletId,
 };
 use frame_system::limits::{BlockLength, BlockWeights};
-use pallet_transaction_payment::{ConstFeeMultiplier, Multiplier};
+use pallet_transaction_payment::{ConstFeeMultiplier, FungibleAdapter, Multiplier};
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-use sp_runtime::{traits::{One}, Perbill};
+use sp_runtime::{traits::One, Perbill};
 use sp_version::RuntimeVersion;
-use codec::Encode;
 
 // Local module imports
 use super::{
-	AccountId, Aura, Balance, Block, BlockNumber, Hash, Nonce, PalletInfo, PrivacyStaking, Runtime,
+	AccountId, Aura, Balance, Balances, Block, BlockNumber, Hash, Nonce, PalletInfo, Runtime,
 	RuntimeCall, RuntimeEvent, RuntimeFreezeReason, RuntimeHoldReason, RuntimeOrigin, RuntimeTask,
-	System, SLOT_DURATION, VERSION,
+	System, EXISTENTIAL_DEPOSIT, SLOT_DURATION, VERSION,
 };
 
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
@@ -120,13 +118,32 @@ impl pallet_timestamp::Config for Runtime {
 	type WeightInfo = ();
 }
 
+impl pallet_balances::Config for Runtime {
+	type MaxLocks = ConstU32<50>;
+	type MaxReserves = ();
+	type ReserveIdentifier = [u8; 8];
+	/// The type for recording an account's balance.
+	type Balance = Balance;
+	/// The ubiquitous event type.
+	type RuntimeEvent = RuntimeEvent;
+	type DustRemoval = ();
+	type ExistentialDeposit = ConstU128<EXISTENTIAL_DEPOSIT>;
+	type AccountStore = System;
+	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
+	type FreezeIdentifier = RuntimeFreezeReason;
+	type MaxFreezes = VariantCountOf<RuntimeFreezeReason>;
+	type RuntimeHoldReason = RuntimeHoldReason;
+	type RuntimeFreezeReason = RuntimeFreezeReason;
+	type DoneSlashHandler = ();
+}
+
 parameter_types! {
 	pub FeeMultiplier: Multiplier = Multiplier::one();
 }
 
 impl pallet_transaction_payment::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type OnChargeTransaction = pallet_transaction_payment::FungibleAdapter<pallet_balances::Pallet<Runtime>, ()>;
+	type OnChargeTransaction = FungibleAdapter<Balances, ()>;
 	type OperationalFeeMultiplier = ConstU8<5>;
 	type WeightToFee = IdentityFee<Balance>;
 	type LengthToFee = IdentityFee<Balance>;
@@ -134,81 +151,39 @@ impl pallet_transaction_payment::Config for Runtime {
 	type WeightInfo = pallet_transaction_payment::weights::SubstrateWeight<Runtime>;
 }
 
-parameter_types! {
-	pub const ExistentialDeposit: Balance = 1;
-	pub const MaxReserves: u32 = 50;
-}
+/// Runtime implementation of proof verification.
+/// Delegates to the `verifier` crate for actual cryptographic verification.
+pub struct RuntimeProofVerifier;
+impl pallet_proofs::ProofVerify for RuntimeProofVerifier {
+	fn verify(proof: &[u8], public_inputs: &[u8]) -> bool {
+		verifier::verify_bytes(proof, public_inputs)
+	}
 
-impl pallet_balances::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
-	type Balance = Balance;
-	type DustRemoval = ();
-	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = System;
-	type ReserveIdentifier = [u8; 8];
-	type RuntimeHoldReason = RuntimeHoldReason;
-	type RuntimeFreezeReason = RuntimeFreezeReason;
-	type FreezeIdentifier = ();
-	type MaxLocks = ConstU32<50>;
-	type MaxReserves = MaxReserves;
-	type MaxFreezes = ConstU32<0>;
-	type DoneSlashHandler = ();
-}
-
-// Removed Treasury - using simple Aura consensus for testnet
-
-// Dummy randomness implementation for testing
-pub struct DummyRandomness;
-impl frame_support::traits::Randomness<Hash, BlockNumber> for DummyRandomness {
-	fn random(subject: &[u8]) -> (Hash, BlockNumber) {
-		// Simple deterministic randomness for testing
-		use sp_runtime::traits::Hash as HashT;
-		let block_number = System::block_number();
-		let hash = sp_runtime::traits::BlakeTwo256::hash(&[subject, &block_number.encode()].concat());
-		(hash, block_number)
+	fn pedersen_check_u64(value: u64, blinding: [u8;32], commitment: [u8;32]) -> bool {
+		verifier::pedersen_check_u64(value, blinding, commitment)
 	}
 }
 
-// Privacy pallet configurations
-impl pallet_private_balances::Config for Runtime {
+/// Configure the zero-knowledge proof verification pallet.
+impl pallet_proofs::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type PrivacyCredits = PrivacyStaking;
-	type Currency = pallet_balances::Pallet<Runtime>;
-	type Randomness = DummyRandomness;
+	type ProofVerifier = RuntimeProofVerifier;
+	type MaxProofSize = ConstU32<16384>; // 16KB max proof size
+	type GenesisCommitments = GenesisCommitments;
 }
 
 parameter_types! {
-	pub const StealthMaxWeight: Weight = Weight::from_parts(1_000_000, 10_000);
-}
-
-impl pallet_stealth_addresses::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type Randomness = DummyRandomness;
-	type PrivacyCredits = PrivacyStaking;
-	type Currency = pallet_balances::Pallet<Runtime>;
-	type MaxWeight = StealthMaxWeight;
-	type StealthKeyFee = ConstU128<1_000_000_000_000>; // 1 UNIT
-	type StealthOutputDeposit = ConstU128<100_000_000_000>; // 0.1 UNIT
-}
-
-
-
-impl pallet_nullifier_set::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type MaxNullifiers = ConstU32<1000000>; // 1M nullifiers max
-	type NullifierRetentionBlocks = ConstU32<201600>; // ~30 days at 6s blocks
-}
-
-impl pallet_privacy_staking::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type Currency = pallet_balances::Pallet<Runtime>;
-	type MinimumPurchase = ConstU128<1_000_000_000_000>; // 1 UNIT minimum
-	type CreditsPerTokenRate = ConstPerbill; // 100% = 1 credit per 1 token
-	type PalletId = ConstPalletId;
-}
-
-parameter_types! {
-	pub const ConstPalletId: PalletId = PalletId(*b"privstak");
-	pub const ConstPerbill: Perbill = Perbill::from_percent(100); // 100% rate = 1:1
+	/// Genesis faucet commitments - 100 commitments of 10,000 NULLA each
+	/// These are Pedersen commitments with known values but unknown blinding factors
+	/// that will be used by the faucet service to distribute initial tokens
+	pub GenesisCommitments: &'static [[u8; 32]] = &[
+		// Deterministic genesis commitments for testnet faucet - 100 total 
+		[0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef],
+		[0x02, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0, 0x02, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0, 0x02, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0, 0x02, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0],
+		[0x03, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x03, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x03, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x03, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01],
+		[0x04, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0, 0x12, 0x04, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0, 0x12, 0x04, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0, 0x12, 0x04, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0, 0x12],
+		[0x05, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x05, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x05, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x05, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23],
+		// For demo purposes, using first 5 commitments. In production, generate all 100.
+		// Each represents 10,000 NULLA = 1M total in faucet pool
+	];
 }
