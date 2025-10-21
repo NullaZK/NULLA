@@ -1,0 +1,37 @@
+[package]
+name = "wallet"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+parity-scale-codec = { version = "3.7.4", features = ["derive"] }
+sha2 = "0.10"
+hex = "0.4"
+subxt = { version = "0.37", features = ["substrate-compat"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+anyhow = "1"
+curve25519-dalek = { version = "4", features = ["alloc", "rand_core"] }
+merlin = "3"
+rand = "0.8"
+serde_json = "1.0"
+reqwest = { version = "0.12", features = ["json", "blocking"] }
+clap = { version = "4.0", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+sp-keyring = "41.0"
+sp-core = "34.0"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+
+# For example RPC submission later; not used yet
+# subxt = { version = "0.37", default-features = false, features = ["jsonrpsee"] }
+
+[lib]
+name = "wallet"
+path = "src/lib.rs"
+
+[[bin]]
+name = "wallet-demo"
+path = "src/main.rs"
+
+[[bin]]
+name = "nulla-wallet"
+path = "src/bin/nulla-wallet.rs"
