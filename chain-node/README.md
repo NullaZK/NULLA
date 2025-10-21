@@ -21,3 +21,13 @@ Repo map
 - faucet/: HTTP faucet that submits unsigned proofs
 - wallet/: CLI for keys, faucet, scan, spend
 - node/ + runtime/: Substrate node and runtime with the privacy pallet
+
+# NULLA Proofs Pallet
+
+Privacy‑native commitments and unsigned ZK transactions for NULLA.
+
+- Commitments Merkle tree and global nullifier set (double‑spend prevention)
+- Unsigned extrinsic: `submit_proof` (accepted via `ValidateUnsigned`)
+- Emits new Merkle root and opaque outputs on success
+- No privacy pool: onboarding via private faucet/output minting
+- No trusted setup: Pedersen on Ristretto; homomorphic-friendly design
