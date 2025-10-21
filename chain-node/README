@@ -1,1 +1,23 @@
+# NULLA – Privacy‑Native L1 (Testnet)
 
+NULLA is a privacy‑native Layer 1 built on Substrate. Value is held as Pedersen commitments in a Merkle tree and moves via unsigned zero‑knowledge proofs submitted to the chain. Onboarding is private through a faucet that mints commitments directly to stealth addresses—no privacy pool.
+
+Highlights
+- Private notes (commitments), Merkle tree, and global nullifiers (double‑spend prevention)
+- Unsigned proofs accepted via ValidateUnsigned (no account signatures in private flow)
+- Stealth addresses for recipients; amounts and identities remain hidden
+- Private faucet for instant onboarding (commitment → commitment), not public balances
+- Token properties exposed as: symbol NULLA, 12 decimals, ss58 42
+- PoS/fees compatibility kept (Balances/TransactionPayment present; privacy flow is separate)
+
+Quick start
+- Run node (dev): cargo run -p node -- --dev --rpc-external --rpc-cors all
+- Run faucet: cargo run -p nulla-faucet
+- Wallet (init → faucet → spend): use the wallet binaries in wallet/ (init, faucet request, scan, spend)
+
+Repo map
+- pallets/pallet-proofs: Merkle, nullifiers, unsigned submit_proof
+- verifier/: ZK verifier used by the pallet
+- faucet/: HTTP faucet that submits unsigned proofs
+- wallet/: CLI for keys, faucet, scan, spend
+- node/ + runtime/: Substrate node and runtime with the privacy pallet
