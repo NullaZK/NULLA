@@ -64,3 +64,28 @@ Notes
 - Uses commitments and nullifiers; no privacy pool.
 - Unsigned extrinsics validated by pallet-proofs (ValidateUnsigned).
 - You need to run the node and the faucet API on the same machine
+
+# NULLA Faucet (Private)
+
+HTTP faucet that onboards users directly with private notes.
+
+- Creates recipient commitments bound to stealth addresses
+- Builds a ZK proof and submits `submit_proof` unsigned
+- Returns tx info and the advanced Merkle root
+
+Run
+- cargo run -p nulla-faucet
+- Health: curl -s http://localhost:3030/health
+
+Request funds (example)
+- Obtain a stealth address from the wallet:
+  - cargo run -p wallet --bin nulla-wallet -- init --name alice
+  - cargo run -p wallet --bin nulla-wallet -- faucet --name alice --url http://localhost:3030
+
+
+Notes
+- Submits unsigned extrinsics; fees handled in‑proof (dev: fee=0).
+
+
+
+
