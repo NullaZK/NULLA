@@ -45,3 +45,22 @@ Usage
 - Library used by pallet-proofs to validate `submit_proof`.
 - Accepts public inputs (merkle root, outputs, nullifier, fee commitment) and a proof blob.
 - Returns Ok on valid proofs; errors otherwise.
+
+# NULLA Wallet CLI
+
+Command‑line wallet for the NULLA privacy‑native L1.
+
+- Stealth keys (view/spend)
+- Request private funds from the faucet (unsigned)
+- Scan chain events for received outputs
+- Spend notes via unsigned ZK proofs
+
+Quick start
+- Init: cargo run -p wallet --bin nulla-wallet -- init --name alice
+- Request funds: cargo run -p wallet --bin nulla-wallet -- faucet --name alice --url http://localhost:3030
+- Spend (unsigned): NAME=alice cargo run -p wallet --bin spend_faucet
+
+Notes
+- Uses commitments and nullifiers; no privacy pool.
+- Unsigned extrinsics validated by pallet-proofs (ValidateUnsigned).
+- You need to run the node and the faucet API on the same machine
