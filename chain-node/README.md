@@ -31,3 +31,17 @@ Privacy‑native commitments and unsigned ZK transactions for NULLA.
 - Emits new Merkle root and opaque outputs on success
 - No privacy pool: onboarding via private faucet/output minting
 - No trusted setup: Pedersen on Ristretto; homomorphic-friendly design
+
+# NULLA Verifier
+
+Verifier crate for NULLA’s private transactions.
+
+- Ristretto Pedersen commitments
+- Balance conservation and linkage to outputs
+- Nullifier derivation to prevent double‑spends
+
+
+Usage
+- Library used by pallet-proofs to validate `submit_proof`.
+- Accepts public inputs (merkle root, outputs, nullifier, fee commitment) and a proof blob.
+- Returns Ok on valid proofs; errors otherwise.
