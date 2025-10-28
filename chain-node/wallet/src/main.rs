@@ -1,7 +1,7 @@
-use wallet::{ProofPublicInputs, pedersen_commit, compute_new_merkle_root, make_proof_bytes_with_w, derive_nullifier};
+use wallet::{ProofPublicInputs, pedersen_commit, compute_new_merkle_root, make_proof_bytes_with_w};
 use parity_scale_codec::Encode;
 use hex::ToHex;
-use curve25519_dalek::scalar::Scalar;
+use curve25519_dalek_v4::scalar::Scalar;
 
 fn main() {
     // Demo values
@@ -9,7 +9,7 @@ fn main() {
 
     // Suppose we spend one note with secret S, produce nullifier deterministically
     let input_secret = [1u8; 32];
-    let nullifier = derive_nullifier(&input_secret, &[0u8; 32]);
+    let nullifier = sp_core::blake2_256(&[input_secret, [0u8;32]].concat());
 
     // Input and outputs with Pedersen commitments
     let r_in = Scalar::from(7u64);
@@ -21,7 +21,7 @@ fn main() {
     let outputs = vec![out1, out2];
 
     // Fee nullifier derived from fee secret
-    let fee_nullifier = derive_nullifier(&[9u8; 32], &[0u8; 32]);
+    let fee_nullifier = sp_core::blake2_256(&[[9u8;32], [0u8;32]].concat());
     let r_fee = Scalar::from(5u64);
     let fee_commitment = pedersen_commit(0, r_fee);
 
@@ -32,6 +32,8 @@ fn main() {
         merkle_root: old_root,
         new_merkle_root: new_root,
         input_commitments: vec![input_commitment],
+        input_indices: vec![0],
+        input_paths: vec![Vec::new()],
         nullifiers: vec![nullifier],
         new_commitments: outputs,
         fee_commitment,

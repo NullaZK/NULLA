@@ -13,10 +13,12 @@ curve25519-dalek = { version = "4", default-features = false, features = ["alloc
 merlin = { version = "3", default-features = false }
 blake2 = { version = "0.10", default-features = false }
 parity-scale-codec = { version = "3.7.4", default-features = false, features = ["derive"] }
+bulletproofs = { version = "4", default-features = false }
+curve25519-dalek-ng = { version = "4", default-features = false, features = ["alloc"] }
+rand_core = { version = "0.6", default-features = false }
 
 [dev-dependencies]
 hex = { version = "0.4", default-features = false }
 
 [features]
-default = ["std"]
 std = []

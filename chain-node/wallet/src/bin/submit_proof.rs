@@ -1,7 +1,7 @@
 use parity_scale_codec::Encode;
 use subxt::dynamic::{self, Value};
 use subxt::{OnlineClient, PolkadotConfig};
-use wallet::{ProofPublicInputs, pedersen_commit, compute_new_merkle_root, make_proof_bytes_with_w, derive_nullifier};
+use wallet::{ProofPublicInputs, pedersen_commit, compute_new_merkle_root, make_proof_bytes_with_w, make_aggregated_range_proof};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -21,11 +21,11 @@ async fn main() -> anyhow::Result<()> {
 
     // Construct a sample transaction using hidden-value commitments
     // Input note of value 100 with blinding 7 (this should match a shield operation)
-    use curve25519_dalek::scalar::Scalar;
+    use curve25519_dalek_v4::scalar::Scalar;
     let r_in = Scalar::from(7u64);
     let input_commitment = pedersen_commit(100, r_in);
     let input_secret = [1u8; 32];
-    let nullifier = derive_nullifier(&input_secret, &[0u8; 32]);
+    let nullifier = sp_core::blake2_256(&[input_secret, [0u8;32]].concat());
 
     // Two outputs 60 and 40 with blindings 2 and 3
     let r_out1 = Scalar::from(2u64);
@@ -35,7 +35,7 @@ async fn main() -> anyhow::Result<()> {
     let outputs = vec![out1, out2];
 
     // Fee nullifier (demo) and fee commitment with zero value, blinding 5
-    let fee_nullifier = derive_nullifier(&[9u8; 32], &[0u8; 32]);
+    let fee_nullifier = sp_core::blake2_256(&[[9u8;32], [0u8;32]].concat());
     let r_fee = Scalar::from(5u64);
     let fee_commitment = pedersen_commit(0, r_fee);
 
@@ -52,6 +52,8 @@ async fn main() -> anyhow::Result<()> {
         merkle_root: effective_old_root,
         new_merkle_root: new_root,
         input_commitments: vec![input_commitment],
+        input_indices: vec![0],
+        input_paths: vec![Vec::new()],
         nullifiers: vec![nullifier],
         new_commitments: outputs,
         fee_commitment,
@@ -65,11 +67,18 @@ async fn main() -> anyhow::Result<()> {
     let w = r_in - r_out1 - r_out2 - r_fee;
     let proof = make_proof_bytes_with_w(&public_inputs, w);
 
-    // Build dynamic call by name
+    // Build aggregated Bulletproofs range proof for outputs and fee
+    let values = vec![60u64, 40u64, 0u64];
+    let blindings = vec![r_out1, r_out2, r_fee];
+    let range_proof = make_aggregated_range_proof(&values, &blindings, 64, &public_inputs);
+
+    // Build dynamic call by name (proof, range_proof, public_inputs, hints)
+    let empty_hints: Vec<Vec<u8>> = Vec::new();
+    let hints_bytes = empty_hints.encode();
     let call = dynamic::tx(
         "Proofs",
         "submit_proof",
-        vec![Value::from_bytes(&proof), Value::from_bytes(&encoded)],
+        vec![Value::from_bytes(&proof), Value::from_bytes(&range_proof), Value::from_bytes(&encoded), Value::from_bytes(&hints_bytes)],
     );
 
     // Log some context for visual correlation
